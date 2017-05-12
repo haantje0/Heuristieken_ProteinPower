@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 19 13:59:41 2017
-
-@author: lex
-"""
-
 import matplotlib.pyplot as plt
 import time
 import numpy as np
@@ -33,37 +26,37 @@ directions = []
 
 directionssaver = []
 
-score = -1        
-                
+score = -1
+
 coordinates = [{'coordinate': ([0,0]),'letter': ""}]
 
 bestproteins = [{'score': score, 'coordinates': coordinates, 'hbonds': [], 'directions': []}]
 
 def proteinchecker():
-            
-    global bestproteins  
+
+    global bestproteins
     global coordinates
     global Hbonds
     global directionssaver
-    
+
     del Hbonds[:]
     del coordinates[:]
-    
+
     grid.fill("")
-        
+
     grid[lenprotein, lenprotein] = protein[0]
 
     x = lenprotein
     y = lenprotein
-    
+
     coordinates.append({'coordinate': ([x,y]),'letter': protein[0]})
-    
+
     for i in range(len(directions)):
-        
+
         if directions[i] == 0:
             y -= 1
         elif directions[i] == 1:
-            x += 1  
+            x += 1
         elif directions[i] == 2:
             y += 1
         elif directions[i] == 3:
@@ -74,7 +67,7 @@ def proteinchecker():
             coordinates.append({'coordinate': ([x,y]),'letter': protein[i + 1]})
         else:
             return -1
-        
+
         if protein[i + 1] == "H":
             givescore(directions[i], x, y)
 
@@ -86,7 +79,7 @@ def proteinchecker():
             directionssaver = deepcopy(directions)
 
     elif bestproteins[0]['score'] < score:
-        del bestproteins[:]  
+        del bestproteins[:]
         bestproteins.append({'score': score, 'coordinates': deepcopy(coordinates), 'hbonds': deepcopy(Hbonds), 'directions': deepcopy(directions)})
         directionssaver = deepcopy(directions)
 
@@ -94,7 +87,7 @@ def proteinchecker():
 
 
 def givescore(direction, x, y):
-    
+
     if direction != 3:
         if grid[y, x + 1] == "H":
             Hbonds.append([[x, x + 1],[y, y]])
@@ -119,29 +112,29 @@ if lenprotein <= 25:
 else:
     for i in range(lenprotein - 1):
         directions.append(0)
-        
+
 x = 0
 
 while x < 100:
-    
+
     backupdirections = deepcopy(directions)
     backupscore = score
     highscore = bestproteins[0]['score']
-    
+
     for i in range(randint(1,3)):
         newdirections = deepcopy(directions)
         while directions == newdirections:
             newdirectionplace = randint(0,len(directions) - 1)
             newdirection = randint(0,3)
             directions[newdirectionplace] = newdirection
-    
+
     score = proteinchecker()
-    
+
     if score < 0:
         directions = backupdirections
-        
+
     elif score > highscore:
-        x = 0  
+        x = 0
         print x
 
     elif score <= bestproteins[0]['score'] and randint(0, 100) != 0:
@@ -175,10 +168,10 @@ for j in bestproteins:
         plt.annotate(i['letter'], (i['coordinate'][0],i['coordinate'][1]), zorder=2)
         linex.append(i['coordinate'][0])
         liney.append(i['coordinate'][1])
-    
+
     for i in j['hbonds']:
         plt.plot(i[0], i[1], zorder = 1, lw=3, c='red', ls='dotted')
-    
+
     plt.plot(linex, liney, zorder=1, lw=3, c='black')
     
     plt.title('Protein with a score of: %i' %j['score'])

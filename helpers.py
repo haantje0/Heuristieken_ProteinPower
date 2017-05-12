@@ -66,7 +66,7 @@ def proteinchecker():
             return -1
 
         if protein[i + 1] == "H":
-            helpers.givescore(directions[i], x, y)
+            givescore(directions[i], x, y)
 
     score = len(Hbonds)
 
@@ -96,4 +96,34 @@ def givescore(direction, x, y):
     if direction != 0:
         if grid[y + 1, x] == "H":
             Hbonds.append([[x, x],[y, y + 1]])
+    return
+
+def plotter(elapsed_time):
+
+    print
+    print "elapsed time: %i seconds" %elapsed_time
+    print "these proteins have a score of: %i" %bestproteins[0]['score']
+    print "there are %i proteins with this score" %len(bestproteins)
+    print
+
+    color = {'H': 'lightgreen', 'P': 'lightblue'}
+    for j in bestproteins:
+        linex = []
+        liney = []
+        #for j in bestproteins:
+        for i in j['coordinates']:
+            plt.scatter(i['coordinate'][0],i['coordinate'][1], s=10000/lenprotein, c=color[i['letter']], zorder=2)
+            plt.annotate(i['letter'], (i['coordinate'][0],i['coordinate'][1]), zorder=2)
+            linex.append(i['coordinate'][0])
+            liney.append(i['coordinate'][1])
+
+        for i in j['hbonds']:
+            plt.plot(i[0], i[1], zorder = 1, lw=3, c='red', ls='dotted')
+
+        plt.plot(linex, liney, zorder=1, lw=3, c='black')
+
+        plt.title('Protein with a score of: %i' %j['score'])
+        plt.axis('off')
+        plt.show()
+
     return
