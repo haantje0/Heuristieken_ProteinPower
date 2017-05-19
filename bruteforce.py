@@ -1,20 +1,18 @@
 import time
-import numpy as np
-from copy import deepcopy
-import bruteforcehelpers as bhps
+import helpers as hps
 
 start_time = time.time()
 
-bhps.placer()
+hps.setprotein("HCPHPHPHCHHHHPCCPPHPPPHPPPPCPPPHPPPHPHHHHCHPHPHPHH")
 
-bhps.proteinplacer()
+hps.setprune(5.0, 0.75, 2.0, 3.75)
 
-bhps.bruteforcer(len(bhps.directions) - 1)
-
-bhps.plotter()
-
-print "there are %i proteins with this score" %len(bhps.bestproteins)
+hps.bruteforcer(0)
 
 elapsed_time = time.time() - start_time
 
-print "elapsed time: %f seconds" %elapsed_time
+print "Your best score has a score of %i" %hps.bestproteins[0]['score']
+
+print "There are %i proteins with this score" %len(hps.bestproteins)
+
+print "Elapsed time: %f seconds" %elapsed_time
