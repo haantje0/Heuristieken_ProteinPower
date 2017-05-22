@@ -13,11 +13,11 @@ lenprotein = 0
 
 gridlength = 0
 
-Hprune1 = 0.
-Hprune2 = 0.
+Hprune1 = -1.
+Hprune2 = -1.
 
-Cprune1 = 0.
-Cprune2 = 0.
+Cprune1 = -1.
+Cprune2 = -1.
 
 grid = np.chararray(1, 1)
 
@@ -72,18 +72,36 @@ def settimer():
         else:
             break
 
-def setprune(HPrune1, HPrune2, CPrune1, CPrune2):
+def setprune():
     global Hprune1
     global Hprune2
     
     global Cprune1
     global Cprune2
 
-    Hprune1 = HPrune1
-    Hprune2 = HPrune2
-
-    Cprune1 = CPrune1
-    Cprune2 = CPrune2
+    while Hprune1 < 0.:
+        try:
+            Hprune1 = float(raw_input("After how manny \"H\" do you want to prune? "))
+        except ValueError:
+            print("please enter a positive number")
+            
+    while Hprune2 < 0.:
+        try:
+            Hprune2 = float(raw_input("What should the average score of \"H\" be? "))
+        except ValueError:
+            print("please enter a positive number")
+            
+    while Cprune1 < 0.:
+        try:
+            Cprune1 = float(raw_input("After how manny \"C\" do you want to prune? "))
+        except ValueError:
+            print("please enter a positive number")
+            
+    while Cprune2 < 0.:
+        try:
+            Cprune2 = float(raw_input("What should the average score of \"C\" be? "))
+        except ValueError:
+            print("please enter a positive number")
 
 def bruteforcer(n):
     if n < (lenprotein - 1): 

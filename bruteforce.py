@@ -5,7 +5,7 @@ start_time = time.time()
 
 hps.setprotein()
 
-hps.setprune(5.0, 0.75, 2.0, 3.75)
+hps.setprune()
 
 hps.bruteforcer(0)
 
