@@ -3,9 +3,14 @@ import helpers as hps
 
 start_time = time.time()
 
-hps.setprotein("HCPHPHPHCHHHHPCCPPHPPPHPPPPCPPPHPPPHPHHHHCHPHPHPHH")
+timer = 0
+protein = 0
 
-hps.hillclimber(60)
+hps.settimer()
+
+hps.setprotein()
+
+hps.hillclimber()
 
 elapsed_time = time.time() - start_time
 

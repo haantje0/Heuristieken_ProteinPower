@@ -3,7 +3,7 @@ import helpers as hps
 
 start_time = time.time()
 
-hps.setprotein("HCPHPHPHCHHHHPCCPPHPPPHPPPPCPPPHPPPHPHHHHCHPHPHPHH")
+hps.setprotein()
 
 hps.setprune(5.0, 0.75, 2.0, 3.75)
 

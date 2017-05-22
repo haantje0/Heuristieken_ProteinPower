@@ -3,6 +3,7 @@ import numpy as np
 from copy import deepcopy
 from random import randint
 import time
+import Protein_library as Plib
 
 start_time = time.time()
 
@@ -26,15 +27,27 @@ Cbonds = []
 score = -1.
 
 counter = 0
+timer = 0
 
 directions = []
 
-coordinates = [{'coordinate': ([0,0]),'letter': ""}]
+coordinates = [{'coordinate': ([0,0]),'letter': "P"}]
 
-bestproteins = [{'score': score, 'coordinates': coordinates, 'hbonds': []}]
+bestproteins = [{'score': score, 'coordinates': coordinates, 'hbonds': Hbonds, 'cbonds': Cbonds}]
 
-def setprotein(string):
-    for i in string:
+def setprotein():
+
+    proteinnumber = 10
+
+    while proteinnumber < 0 or proteinnumber > 8:
+        try:
+            proteinnumber = int(raw_input("the protein you want to use (integer between 0 and 8): "))
+        except ValueError:
+            print("Please enter a number between 0 and 8 (check the library)")
+    
+    proteinsequence = Plib.list[proteinnumber]
+    
+    for i in proteinsequence:
         protein.append(i)
 
     global lenprotein
@@ -46,6 +59,18 @@ def setprotein(string):
     gridlength = 2 * lenprotein + 1
 
     grid = np.chararray((gridlength, gridlength))
+
+def settimer():
+    global timer    
+    
+    while True:
+        try:
+            timer = int(raw_input("Please give a looping timer (in seconds): "))
+        except ValueError:
+            print("Please give it in seconds!")
+            continue
+        else:
+            break
 
 def setprune(HPrune1, HPrune2, CPrune1, CPrune2):
     global Hprune1
@@ -85,7 +110,7 @@ def bruteforcer(n):
 
     return
     
-def hillclimber(timer):
+def hillclimber():
     
     global counter 
     global directions
@@ -139,9 +164,6 @@ def hillclimber(timer):
 def hcproteinchecker():
 
     global bestproteins
-    global coordinates
-    global Hbonds
-    global directionssaver
 
     del Hbonds[:]
     del Cbonds[:]
@@ -196,9 +218,6 @@ def hcproteinchecker():
 def bfproteinchecker():
 
     global bestproteins
-    global coordinates
-    global Hbonds
-    global directionssaver
 
     del Hbonds[:]
     del Cbonds[:]
@@ -350,3 +369,4 @@ def printprotein(j):
     plt.axis('off')
     plt.title('Protein with a score of: %i' %j['score'])
     plt.show()
+    
