@@ -29,6 +29,11 @@ score = -1.
 counter = 0
 timer = 0
 
+bfpiecessaver = []
+bfpieces = []
+piecestart = 0
+pieceend = 0
+
 directions = []
 
 coordinates = [{'coordinate': ([0,0]),'letter': "P"}]
@@ -41,7 +46,7 @@ def setprotein():
 
     while proteinnumber < 0 or proteinnumber > 8:
         try:
-            proteinnumber = int(raw_input("the protein you want to use (integer between 0 and 8): "))
+            proteinnumber = int(raw_input("The protein you want to use (integer between 0 and 8): "))
         except ValueError:
             print("Please enter a number between 0 and 8 (check the library)")
     
@@ -61,11 +66,13 @@ def setprotein():
     grid = np.chararray((gridlength, gridlength))
 
 def settimer():
-    global timer    
+    global timer  
+    global start_time
     
     while True:
         try:
             timer = int(raw_input("Please give a looping timer (in seconds): "))
+            start_time = time.time()
         except ValueError:
             print("Please give it in seconds!")
             continue
@@ -102,7 +109,7 @@ def setprune():
             Cprune2 = float(raw_input("What should the average score of \"C\" be? "))
         except ValueError:
             print("please enter a positive number")
-
+    
 def bruteforcer(n):
     if n < (lenprotein - 1): 
         directions.append(0)
@@ -128,6 +135,53 @@ def bruteforcer(n):
 
     return
     
+def hcbruteforcer(n):
+    if n < (pieceend): 
+        directions.append(0)
+        if n >= piecestart:
+            for i in range(4):
+                
+                if directions[n - piecestart] != 3:
+                    if hcpieceproteinchecker() < 0:
+                        directions[n - piecestart] += 1
+                    else:
+                        hcbruteforcer(n + 1)
+                        directions[n - piecestart] += 1 
+                   
+                else:
+                    if hcpieceproteinchecker() < 0:
+                        directions.pop()
+                        return 
+                    else:                
+                        hcbruteforcer(n + 1) 
+                        directions.pop()
+        else:
+            hcbruteforcer(n + 1)
+
+    return
+
+def hillclimbslicer():
+    global piecestart
+    global pieceend
+    global bfpiecessaver
+    global bfpieces
+    
+    global bestproteins
+        
+    for i in range(len(protein) - 5):
+        piecestart = i
+        pieceend = i + 5
+        hcbruteforcer(i)
+        
+        if bestproteins[0]['score'] >= 2:
+            for j in bfpiecessaver:
+                bfpieces.append(j)
+
+        del bfpiecessaver[:]
+        del bestproteins[:]
+        
+        bestproteins = [{'score': -1, 'coordinates': coordinates, 'hbonds': Hbonds, 'cbonds': Cbonds}]
+    
 def hillclimber():
     
     global counter 
@@ -137,27 +191,42 @@ def hillclimber():
         
         setdirections()
         
-        x = 0
-        y = 0    
+        looper = 0
+        cooler = 0    
         
         highscore = 0
         counter += 1
         
         score = 0
         
-        while x < lenprotein*20 and (time.time() - start_time) < timer:
+        while looper < lenprotein*20 and (time.time() - start_time) < timer:
         
             backupdirections = deepcopy(directions)
     
             if score > highscore:
                 highscore = score
             
-            for i in range(randint(1,1)):
+            random = randint(0, 2)
+            if random == 0:     
+                newdirections = deepcopy(directions)
+                while directions == newdirections:
+                    newdirectionpiece = bfpieces[randint(0, len(bfpieces) - 1)]
+
+                    for i in range(5):
+                        directions[newdirectionpiece[0] + i] = newdirectionpiece[1][i]
+      
+            elif random == 1:
                 newdirections = deepcopy(directions)
                 while directions == newdirections:
                     newdirectionplace = randint(0,len(directions) - 1)
                     newdirection = randint(0,3)
                     directions[newdirectionplace] = newdirection
+            
+            else:
+                newdirectionplace = randint(0,len(directions))
+                turn = randint(1,3)
+                for i in range(len(directions) - newdirectionplace):
+                    directions[newdirectionplace + i] = (directions[newdirectionplace + i] + turn) % 4
         
             score = hcproteinchecker()
         
@@ -165,20 +234,71 @@ def hillclimber():
                 directions = backupdirections
         
             elif score > highscore:
-                x = 0
+                looper = 0
                 print "highscore: %i" %highscore
         
-            elif score < highscore and randint(0, (int (y**(2./3.)))) != 0:
+            elif score < highscore and randint(0, (int (cooler**(2./3.)))) != 0:
                 directions = backupdirections
         
             elif score == highscore and randint(0,1) == 0:
                 directions = backupdirections
             
             else:
-                x += 1
-                y += 1
-                print x    
+                looper += 1
+                cooler += 1
+                print looper    
+
+def hcpieceproteinchecker():
     
+    global bfpiecessaver
+
+    del Hbonds[:]
+    del Cbonds[:]
+
+    grid.fill("")
+    
+    score = 0
+    
+    grid[6, 6] = protein[piecestart]
+        
+    x = 6
+    y = 6
+    
+    for i in range(len(directions)):
+            
+        if directions[i] == 0:
+            y -= 1
+        elif directions[i] == 1:
+            x += 1
+        elif directions[i] == 2:
+            y += 1
+        elif directions[i] == 3:
+            x -= 1
+
+        if grid[y, x] == "":
+            grid[y, x] = protein[piecestart + i + 1]
+        else:
+            return -1
+            
+        if protein[piecestart + i + 1] == "H":
+            giveHscore(directions[i], x, y)
+        elif protein[piecestart + i + 1] == "C":
+            giveHscore(directions[i], x, y)
+            giveCscore(directions[i], x, y)
+            
+    score = len(Hbonds) + 5 * len(Cbonds)
+    
+    if bestproteins[0]['score'] == score:
+        bfpiecessaver.append([piecestart, deepcopy(directions)])
+        
+    elif bestproteins[0]['score'] < score:
+        del bestproteins[:]
+        del bfpiecessaver[:]
+        bestproteins.append({'score': score})
+        bfpiecessaver.append([piecestart, deepcopy(directions)])
+            
+    return score
+
 def hcproteinchecker():
 
     global bestproteins
@@ -299,7 +419,8 @@ def bfproteinchecker():
                 bestproteins.append({'score': score, 'coordinates': deepcopy(coordinates), 'hbonds': deepcopy(Hbonds), 'cbonds': deepcopy(Cbonds)})
                 elapsed_time = time.time() - start_time
                 print "elapsed time: %f seconds" %elapsed_time
-                print "Cprune: %f" %(len(Cbonds)*5/(Ccount-Cprune1))
+                if Ccount > 0.:
+                    print "Cprune: %f" %(len(Cbonds)*5/(Ccount-Cprune1))
                 print "Hprune: %f" %(len(Hbonds)/(Hcount-Hprune1))
                 printprotein(bestproteins[-1])
 
@@ -308,7 +429,8 @@ def bfproteinchecker():
             bestproteins.append({'score': score, 'coordinates': deepcopy(coordinates), 'hbonds': deepcopy(Hbonds), 'cbonds': deepcopy(Cbonds)})
             elapsed_time = time.time() - start_time
             print "elapsed time: %f seconds" %elapsed_time
-            print "Cprune: %f" %(len(Cbonds)*5/(Ccount-Cprune1))
+            if Ccount > 0.:
+                print "Cprune: %f" %(len(Cbonds)*5/(Ccount-Cprune1))
             print "Hprune: %f" %(len(Hbonds)/(Hcount-Hprune1))
             plotter()
 

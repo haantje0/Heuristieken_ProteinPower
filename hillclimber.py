@@ -1,14 +1,16 @@
 import time
 import helpers as hps
 
-start_time = time.time()
-
 timer = 0
 protein = 0
 
+hps.setprotein()
+
+hps.hillclimbslicer()
+
 hps.settimer()
 
-hps.setprotein()
+start_time = time.time()
 
 hps.hillclimber()
 
