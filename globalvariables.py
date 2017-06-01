@@ -15,16 +15,22 @@ Cprune2 = -1.
 
 grid = np.chararray(1, 1)
 
+x = 0
+y = 0
+
 Hbonds = []
 Cbonds = []
+
+Hcount = 0
+Ccount = 0
 
 score = -1.
 
 counter = 0
 timer = 0
 
-bfpiecessaver = []
-bfpieces = []
+bfpiecessaver = [[0, [0,0,0,0,0], 0]]
+bfpieces = [[0, [0,0,0,0,0], 0]]
 piecestart = 0
 pieceend = 0
 

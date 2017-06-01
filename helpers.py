@@ -65,226 +65,98 @@ def setprune():
         except ValueError:
             print("please enter a positive number")
     
-def bruteforcer(n):
-    if n < (globalvars.lenprotein - 1): 
-        globalvars.directions.append(0)
-        if n > 0:
-            for i in range(4):
-   
-                if globalvars.directions[n] != 3:
-                    if bfproteinchecker() < 0:
-                        globalvars.directions[n] += 1
-                    else:
-                        bruteforcer(n + 1)
-                        globalvars.directions[n] += 1 
-                   
-                else:
-                    if bfproteinchecker() < 0:
-                        globalvars.directions.pop()
-                        return 
-                    else:                
-                        bruteforcer(n + 1) 
-                        globalvars.directions.pop()
-        else:
-            bruteforcer(n + 1)
-
-    return
-    
-def hcbruteforcer(n):
-    if n < (globalvars.pieceend): 
-        globalvars.directions.append(0)
-        if n >= globalvars.piecestart:
-            for i in range(4):
+def setdirections():
+    score = -1
+    while score < 0:
+        del globalvars.directions[:]
+        prevdirection = 0
+        
+        for i in range(globalvars.lenprotein - 1):
+            newdirection = randint(0,3)
+            while newdirection == (prevdirection + 2) % 4:
+                newdirection = randint(0,3)
                 
-                if globalvars.directions[n - globalvars.piecestart] != 3:
-                    if hcpieceproteinchecker() < 0:
-                        globalvars.directions[n - globalvars.piecestart] += 1
-                    else:
-                        hcbruteforcer(n + 1)
-                        globalvars.directions[n - globalvars.piecestart] += 1 
-                   
-                else:
-                    if hcpieceproteinchecker() < 0:
-                        globalvars.directions.pop()
-                        return 
-                    else:                
-                        hcbruteforcer(n + 1) 
-                        globalvars.directions.pop()
-        else:
-            hcbruteforcer(n + 1)
-
-    return
-
-def hillclimbslicer():
-        
-    for i in range(len(globalvars.protein) - 5):
-        globalvars.piecestart = i
-        globalvars.pieceend = i + 5
-        hcbruteforcer(i)
-        
-        if globalvars.bestproteins[0]['score'] >= 2:
-            for j in globalvars.bfpiecessaver:
-                globalvars.bfpieces.append(j)
-
-        del globalvars.bfpiecessaver[:]
-        del globalvars.bestproteins[:]
-        
-        globalvars.bestproteins = [{'score': -1, 'coordinates': globalvars.coordinates, 'hbonds': globalvars.Hbonds, 'cbonds': globalvars.Cbonds}]
-    
-def hillclimber():
-
-    while (time.time() - globalvars.start_time) < globalvars.timer:
-        
-        setdirections()
-        
-        looper = 0
-        cooler = 0    
-        
-        highscore = 0
-        globalvars.counter += 1
-        
-        globalvars.score = 0
-        
-        while looper < globalvars.lenprotein*20 and (time.time() - globalvars.start_time) < globalvars.timer:
-        
-            backupdirections = deepcopy(globalvars.directions)
-    
-            if globalvars.score > highscore:
-                highscore = globalvars.score
+            globalvars.directions.append(newdirection)
+            prevdirection = newdirection
             
-            random = randint(0, 2)
-            if random == 0:     
-                newdirections = deepcopy(globalvars.directions)
-                while globalvars.directions == newdirections:
-                    newdirectionpiece = globalvars.bfpieces[randint(0, len(globalvars.bfpieces) - 1)]
-
-                    for i in range(5):
-                        globalvars.directions[newdirectionpiece[0] + i] = newdirectionpiece[1][i]
-      
-            elif random == 1:
-                newdirections = deepcopy(globalvars.directions)
-                while globalvars.directions == newdirections:
-                    newdirectionplace = randint(0,len(globalvars.directions) - 1)
-                    newdirection = randint(0,3)
-                    globalvars.directions[newdirectionplace] = newdirection
-            
-            else:
-                newdirectionplace = randint(0,len(globalvars.directions))
-                turn = randint(1,3)
-                for i in range(len(globalvars.directions) - newdirectionplace):
-                    globalvars.directions[newdirectionplace + i] = (globalvars.directions[newdirectionplace + i] + turn) % 4
-        
-            globalvars.score = hcproteinchecker()
-        
-            if globalvars.score < 0:
-                globalvars.directions = backupdirections
-        
-            elif globalvars.score > highscore:
-                looper = 0
-                print "highscore: %i" %highscore
-        
-            elif globalvars.score < highscore and randint(0, (int (cooler**(2./3.)))) != 0:
-                globalvars.directions = backupdirections
-        
-            elif globalvars.score == highscore and randint(0,1) == 0:
-                globalvars.directions = backupdirections
-            
-            else:
-                looper += 1
-                cooler += 1
-                print looper    
-
-def hcpieceproteinchecker():
+        score = hcproteinchecker()
+        print score 
     
-    del globalvars.Hbonds[:]
-    del globalvars.Cbonds[:]
-
-    globalvars.grid.fill("")
-    
-    score = 0
-    
-    globalvars.grid[6, 6] = globalvars.protein[globalvars.piecestart]
-        
-    x = 6
-    y = 6
-    
-    for i in range(len(globalvars.directions)):
-            
-        if globalvars.directions[i] == 0:
-            y -= 1
-        elif globalvars.directions[i] == 1:
-            x += 1
-        elif globalvars.directions[i] == 2:
-            y += 1
-        elif globalvars.directions[i] == 3:
-            x -= 1
-
-        if globalvars.grid[y, x] == "":
-            globalvars.grid[y, x] = globalvars.protein[globalvars.piecestart + i + 1]
-        else:
-            return -1
-            
-        if globalvars.protein[globalvars.piecestart + i + 1] == "H":
-            giveHscore(globalvars.directions[i], x, y)
-        elif globalvars.protein[globalvars.piecestart + i + 1] == "C":
-            giveHscore(globalvars.directions[i], x, y)
-            giveCscore(globalvars.directions[i], x, y)
-            
-    score = len(globalvars.Hbonds) + 5 * len(globalvars.Cbonds)
-    
-    if globalvars.bestproteins[0]['score'] == score:
-        globalvars.bfpiecessaver.append([globalvars.piecestart, deepcopy(globalvars.directions)])
-        
-    elif globalvars.bestproteins[0]['score'] < score:
-        del globalvars.bestproteins[:]
-        del globalvars.bfpiecessaver[:]
-        globalvars.bestproteins.append({'score': score})
-        globalvars.bfpiecessaver.append([globalvars.piecestart, deepcopy(globalvars.directions)])
-            
-    return score
-
-def hcproteinchecker():
-
+def proteinchecker():
     del globalvars.Hbonds[:]
     del globalvars.Cbonds[:]
     del globalvars.coordinates[:]
-
+    
     globalvars.grid.fill("")
-    
-    score = 0
-    
-    globalvars.grid[globalvars.lenprotein, globalvars.lenprotein] = globalvars.protein[0]
-        
-    x = globalvars.lenprotein
-    y = globalvars.lenprotein
 
-    globalvars.coordinates.append({'coordinate': ([x,y]),'letter': globalvars.protein[0]})
+    score = 0.
+    
+    globalvars.grid[globalvars.lenprotein, globalvars.lenprotein] = globalvars.protein[0 + globalvars.piecestart]
+
+    globalvars.Hcount = 0.
+    if globalvars.protein[0] == "H":
+        globalvars.Hcount += 1.
+        
+    globalvars.Ccount = 0.
+    if globalvars.protein[0] == "C":
+        globalvars.Ccount += 1.
+
+    globalvars.x = globalvars.lenprotein
+    globalvars.y = globalvars.lenprotein
+    
+    globalvars.coordinates.append({'coordinate': ([globalvars.x,globalvars.y]),'letter': globalvars.protein[0]})
 
     for i in range(len(globalvars.directions)):
-            
-        if globalvars.directions[i] == 0:
-            y -= 1
-        elif globalvars.directions[i] == 1:
-            x += 1
-        elif globalvars.directions[i] == 2:
-            y += 1
-        elif globalvars.directions[i] == 3:
-            x -= 1
 
-        if globalvars.grid[y, x] == "":
-            globalvars.grid[y, x] = globalvars.protein[i + 1]
-            globalvars.coordinates.append({'coordinate': ([x,y]),'letter': globalvars.protein[i + 1]})
-        else:
+        if (globalvars.Hcount-globalvars.Hprune1)*globalvars.Hprune2 > len(globalvars.Hbonds):
             return -1
             
-        if globalvars.protein[i + 1] == "H":
-            giveHscore(globalvars.directions[i], x, y)
-        elif globalvars.protein[i + 1] == "C":
-            giveHscore(globalvars.directions[i], x, y)
-            giveCscore(globalvars.directions[i], x, y)
+        if (globalvars.Ccount-globalvars.Cprune1)*globalvars.Cprune2 > len(globalvars.Cbonds) * 5:
+            return -1
+            
+        if globalvars.directions[i] == 0:
+            globalvars.y -= 1
+        elif globalvars.directions[i] == 1:
+            globalvars.x += 1
+        elif globalvars.directions[i] == 2:
+            globalvars.y += 1
+        elif globalvars.directions[i] == 3:
+            globalvars.x -= 1
+   
+        if globalvars.grid[globalvars.y, globalvars.x] == "":
+            globalvars.grid[globalvars.y, globalvars.x] = globalvars.protein[i + globalvars.piecestart + 1]
+            globalvars.coordinates.append({'coordinate': ([globalvars.x,globalvars.y]),'letter': globalvars.protein[i + globalvars.piecestart + 1]})
+        else:
+            return -1
+
+        if globalvars.protein[i + globalvars.piecestart + 1] == "H":
+            giveHscore(globalvars.directions[i], globalvars.x, globalvars.y)
+            globalvars.Hcount += 1.
+        elif globalvars.protein[i + globalvars.piecestart + 1] == "C":
+            giveHscore(globalvars.directions[i], globalvars.x, globalvars.y)
+            giveCscore(globalvars.directions[i], globalvars.x, globalvars.y)
+            globalvars.Ccount += 1.
             
     score = len(globalvars.Hbonds) + 5 * len(globalvars.Cbonds)
     
+    return score
+    
+def hcpieceproteinchecker():
+    
+    score = proteinchecker()
+    
+    if globalvars.bfpiecessaver[0][2] == score:
+        globalvars.bfpiecessaver.append([globalvars.piecestart, deepcopy(globalvars.directions), score])
+        
+    elif globalvars.bfpiecessaver[0][2] < score:
+        del globalvars.bfpiecessaver[:]
+        globalvars.bfpiecessaver.append([globalvars.piecestart, deepcopy(globalvars.directions), score])
+    
+    return score
+            
+def hcproteinchecker():
+    score = proteinchecker()
+
     if globalvars.bestproteins[0]['score'] == score:
         if not any (d['hbonds'] == globalvars.Hbonds for d in globalvars.bestproteins):
             globalvars.bestproteins.append({'score': score, 'coordinates': deepcopy(globalvars.coordinates), 'hbonds': deepcopy(globalvars.Hbonds), 'cbonds': deepcopy(globalvars.Cbonds)})
@@ -294,74 +166,19 @@ def hcproteinchecker():
         globalvars.bestproteins.append({'score': score, 'coordinates': deepcopy(globalvars.coordinates), 'hbonds': deepcopy(globalvars.Hbonds), 'cbonds': deepcopy(globalvars.Cbonds)})
             
     return score
-
+    
 def bfproteinchecker():
+    score = proteinchecker()
 
-    del globalvars.Hbonds[:]
-    del globalvars.Cbonds[:]
-    del globalvars.coordinates[:]
-    
-    globalvars.grid.fill("")
-
-    score = 0.
-    
-    globalvars.grid[globalvars.lenprotein, globalvars.lenprotein] = globalvars.protein[0]
-
-    Hcount = 0.
-    if globalvars.protein[0] == "H":
-        Hcount += 1.
-        
-    Ccount = 0.
-    if globalvars.protein[0] == "C":
-        Ccount += 1.
-
-    x = globalvars.lenprotein
-    y = globalvars.lenprotein
-    
-    globalvars.coordinates.append({'coordinate': ([x,y]),'letter': globalvars.protein[0]})
-
-    for i in range(len(globalvars.directions)):
-
-        if (Hcount-globalvars.Hprune1)*globalvars.Hprune2 > len(globalvars.Hbonds):
-            return -1
-            
-        if (Ccount-globalvars.Cprune1)*globalvars.Cprune2 > len(globalvars.Cbonds) * 5:
-            return -1
-            
-        if globalvars.directions[i] == 0:
-            y -= 1
-        elif globalvars.directions[i] == 1:
-            x += 1
-        elif globalvars.directions[i] == 2:
-            y += 1
-        elif globalvars.directions[i] == 3:
-            x -= 1
-
-        if globalvars.grid[y, x] == "":
-            globalvars.grid[y, x] = globalvars.protein[i + 1]
-            globalvars.coordinates.append({'coordinate': ([x,y]),'letter': globalvars.protein[i + 1]})
-        else:
-            return -1
-
-        if globalvars.protein[i + 1] == "H":
-            giveHscore(globalvars.directions[i], x, y)
-            Hcount += 1.
-        elif globalvars.protein[i + 1] == "C":
-            giveHscore(globalvars.directions[i], x, y)
-            giveCscore(globalvars.directions[i], x, y)
-            Ccount += 1.
-            
-    score = len(globalvars.Hbonds) + 5 * len(globalvars.Cbonds)
-    
     if len(globalvars.directions) == globalvars.lenprotein - 1:
         if globalvars.bestproteins[0]['score'] == score:
             if not any (d['hbonds'] == globalvars.Hbonds for d in globalvars.bestproteins):
                 globalvars.bestproteins.append({'score': score, 'coordinates': deepcopy(globalvars.coordinates), 'hbonds': deepcopy(globalvars.Hbonds), 'cbonds': deepcopy(globalvars.Cbonds)})
                 elapsed_time = time.time() - globalvars.start_time
                 print "elapsed time: %f seconds" %elapsed_time
-                if Ccount > 0.:
-                    print "Cprune: %f" %(len(globalvars.Cbonds)*5/(Ccount-globalvars.Cprune1))
-                print "Hprune: %f" %(len(globalvars.Hbonds)/(Hcount-globalvars.Hprune1))
+                if globalvars.Ccount > 0.:
+                    print "Cprune: %f" %(len(globalvars.Cbonds)*5/(globalvars.Ccount-globalvars.Cprune1))
+                print "Hprune: %f" %(len(globalvars.Hbonds)/(globalvars.Hcount-globalvars.Hprune1))
                 printprotein(globalvars.bestproteins[-1])
 
         elif globalvars.bestproteins[0]['score'] < score:
@@ -369,9 +186,9 @@ def bfproteinchecker():
             globalvars.bestproteins.append({'score': score, 'coordinates': deepcopy(globalvars.coordinates), 'hbonds': deepcopy(globalvars.Hbonds), 'cbonds': deepcopy(globalvars.Cbonds)})
             elapsed_time = time.time() - globalvars.start_time
             print "elapsed time: %f seconds" %elapsed_time
-            if Ccount > 0.:
-                print "Cprune: %f" %(len(globalvars.Cbonds)*5/(Ccount-globalvars.Cprune1))
-            print "Hprune: %f" %(len(globalvars.Hbonds)/(Hcount-globalvars.Hprune1))
+            if globalvars.Ccount > 0.:
+                print "Cprune: %f" %(len(globalvars.Cbonds)*5/(globalvars.Ccount-globalvars.Cprune1))
+            print "Hprune: %f" %(len(globalvars.Hbonds)/(globalvars.Hcount-globalvars.Hprune1))
             plotter()
 
     return score
@@ -406,28 +223,11 @@ def giveCscore(direction, x, y):
             globalvars.Cbonds.append([[x, x],[y, y + 1]])
     return
 
-def setdirections():
-    score = -1
-    while score < 0:
-        del globalvars.directions[:]
-        prevdirection = 0
-        
-        for i in range(globalvars.lenprotein - 1):
-            newdirection = randint(0,3)
-            while newdirection == (prevdirection + 2) % 4:
-                newdirection = randint(0,3)
-                
-            globalvars.directions.append(newdirection)
-            prevdirection = newdirection
-            
-        score = hcproteinchecker()
-        print score
-
 def plotter():
     for j in globalvars.bestproteins:
         printprotein(j)
-    return
-
+    return   
+    
 def printprotein(j):
     color = {'H': 'lightgreen', 'P': 'lightblue', 'C': 'pink'}
     
